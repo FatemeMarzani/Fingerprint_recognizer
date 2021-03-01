@@ -15,8 +15,7 @@ Most of the data transferring on the network are encrypted, hence, it seems that
 - [ ] Load and save symbols
     -  [ ] Test
 - [ ] Finding symbols
-    -  [ ] Generate cluster of network destinations
-    -  [ ] Generate cluster of network destinations
+    -  [ ] Test
 
 ## Note
 This app is currently under development
