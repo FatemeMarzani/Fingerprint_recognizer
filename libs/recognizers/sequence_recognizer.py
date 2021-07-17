@@ -8,7 +8,7 @@ class SequenceRecognizer(FingerprintRecognizer):
 
     def __init__(self, symbols: dict, config: dict = {}):
         self.default_config = {
-            "flow_duration": 0
+            "flow_duration": 5
         }
         super().__init__(symbols, config=config)
     

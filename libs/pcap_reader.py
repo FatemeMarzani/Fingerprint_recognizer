@@ -205,34 +205,37 @@ class PcapReader(object):
             if not ("TCP" in packet or "UDP" in packet):
                 continue
 
+            try:
+                # Get required packet data
+                d = [path,
+                    packet.layers[1].layer_name,  # Get
+                    packet.layers[1].stream,  # Get stream ID
+                    packet.sniff_timestamp,  # Get packet timestamp
+                    packet.length,  # Get packet length
+                    packet.layers[0].src,  # Get source IP or IPv6 (fixed)
+                    packet.layers[0].dst,  # Get destination IP or IPv6 (fixed)
+                    packet.layers[1].srcport,  # Get source port
+                    packet.layers[1].dstport,  # Get destination port
+                    None]
 
-            # Get required packet data
-            d = [path,
-                 packet.layers[2].layer_name,  # Get
-                 packet.layers[2].stream,  # Get stream ID
-                 packet.sniff_timestamp,  # Get packet timestamp
-                 packet.length,  # Get packet length
-                 packet.layers[1].src,  # Get source IP or IPv6 (fixed)
-                 packet.layers[1].dst,  # Get destination IP or IPv6 (fixed)
-                 packet.layers[2].srcport,  # Get source port
-                 packet.layers[2].dstport,  # Get destination port
-                 None]
+                # Check whether SSL/TLS certificate is in packet
+                if "SSL" in packet and \
+                        packet.ssl.get("handshake_certificate") is not None:
+                    # Get certificate
+                    cert = packet.ssl.get('handshake_certificate')
+                    # Parse cert to bytes
+                    cert = bytes.fromhex(cert.replace(':', ''))
+                    # Parse x509 certificate as DER
+                    cert = x509.load_der_x509_certificate(cert,
+                                                        default_backend())
+                    # Get serial number - TODO extend with other features?
+                    d[-1] = cert.serial_number
 
-            # Check whether SSL/TLS certificate is in packet
-            if "SSL" in packet and \
-                    packet.ssl.get("handshake_certificate") is not None:
-                # Get certificate
-                cert = packet.ssl.get('handshake_certificate')
-                # Parse cert to bytes
-                cert = bytes.fromhex(cert.replace(':', ''))
-                # Parse x509 certificate as DER
-                cert = x509.load_der_x509_certificate(cert,
-                                                      default_backend())
-                # Get serial number - TODO extend with other features?
-                d[-1] = cert.serial_number
+                # Append data item to result
+                result.append(d)
+            except Exception as ex:
+                warnings.warn(f"Cannot read pcap: {path}")
 
-            # Append data item to result
-            result.append(d)
 
         # Close capture
         pcap.close()

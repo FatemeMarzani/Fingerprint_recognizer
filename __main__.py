@@ -24,7 +24,7 @@ def run(pcaps_paths=[], flows_paths=[], write_flows_dir='', symbols_path='', out
     elif pcaps_paths:
         pcap_reader = PcapReader()
         for pcaps_path in pcaps_paths:
-            appName = Path(pcaps_path).stem
+            appName = Path(pcaps_path).parts[-2]
             executionName = Path(pcaps_path).stem;
             flows_per_app[appName] = flows_per_app.get(appName, {'all': {}})
             flows_per_app[appName]['all'][executionName] = pcap_reader.read(pcaps_path)
@@ -73,7 +73,7 @@ def run(pcaps_paths=[], flows_paths=[], write_flows_dir='', symbols_path='', out
 
 def save_app_flows(appName, result, out_dir):
     for label, symbols in result.items():
-        TextReader.write_lines([" ".join(r) for r in symbols], out_dir + '/' + appName + '_' + label + '.txt')
+        TextReader.write_lines([(" ".join(r)) + '\n' for r in symbols], out_dir + '/' + appName + '.txt')
 
 
 def reshape_flows_per_app(flows_per_app, train_size):
