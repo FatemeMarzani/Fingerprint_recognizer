@@ -8,7 +8,8 @@ class SequenceRecognizer(FingerprintRecognizer):
 
     def __init__(self, symbols: dict, config: dict = {}):
         self.default_config = {
-            "flow_duration": 0
+            "flow_duration": 0,
+            "session_threshold": 0.5
         }
         super().__init__(symbols, config=config)
     
@@ -32,7 +33,9 @@ class SequenceRecognizer(FingerprintRecognizer):
         # Sort flows of each app by time_start
         # It's already sorted, just in case
         sorted_flows = sorted(flows, key=lambda k: k.time_start)
-        
+        if(len(sorted_flows) > 0):
+            last_all_captured_timestamp = sorted_flows[0].time_start
+
         # Loop through all flows of the app
         for flow in sorted_flows:
 
@@ -43,8 +46,11 @@ class SequenceRecognizer(FingerprintRecognizer):
             last_timestamp = symbols_last_captured_timestamps.get(symbol,-math.inf)
         
             if flow.time_start - last_timestamp > self.config["flow_duration"]:
+                if flow.time_start - last_all_captured_timestamp > self.config["session_threshold"]:
+                    symbols_sequence.append('|')
                 symbols_sequence.append(symbol)
                 symbols_last_captured_timestamps[symbol] = flow.time_start
+                last_all_captured_timestamp = flow.time_start
         return symbols_sequence
 
     def get_or_assign_flow_symbol(self, flow: Flow):
