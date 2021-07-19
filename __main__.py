@@ -7,6 +7,10 @@ from libs.binary_reader import BinaryReader
 from fingerprint_recognizer import FingerprintRecognizer
 from pathlib import Path
 
+import nest_asyncio
+nest_asyncio.apply()
+
+
 
 def run(pcaps_paths=[], flows_paths=[], write_flows_dir='', symbols_path='', out_dir='', train_size=0.0, recognizer=None):
     # Phase 1: Read flows from pcap file or binary file
@@ -14,23 +18,30 @@ def run(pcaps_paths=[], flows_paths=[], write_flows_dir='', symbols_path='', out
     if flows_paths:
         for pcaps_path in flows_paths:
             appName = Path(pcaps_path).parts[-2]
-            executionName = Path(pcaps_path).stem;
+            executionName = Path(pcaps_path).stem
             flows_per_app[appName] = flows_per_app.get(appName, {'all': {}})
+            print(f"reading binaries from {pcaps_path}")
             flows_per_app[appName]['all'][executionName] = BinaryReader.read(pcaps_path)
 
             if write_flows_dir:
-                BinaryReader.write(flows_per_app[appName]['all'][executionName], write_flows_dir + '/' + appName + '/' + executionName + '.p')
+                write_path = write_flows_dir + '/' + appName + '/' + executionName + '.p'
+                print(f"writing binaries into {write_path}")
+                BinaryReader.write(flows_per_app[appName]['all'][executionName], write_path)
 
     elif pcaps_paths:
         pcap_reader = PcapReader()
         for pcaps_path in pcaps_paths:
             appName = Path(pcaps_path).stem
-            executionName = Path(pcaps_path).stem;
+            executionName = Path(pcaps_path).stem
             flows_per_app[appName] = flows_per_app.get(appName, {'all': {}})
+            print(f"reading pcaps from {pcaps_path}")
+
             flows_per_app[appName]['all'][executionName] = pcap_reader.read(pcaps_path)
 
             if write_flows_dir:
-                BinaryReader.write(flows_per_app[appName]['all'][executionName], write_flows_dir + '/' + appName + '/' + executionName + '.p')
+                write_path = write_flows_dir + '/' + appName + '/' + executionName + '.p'
+                print(f"writing binaries into {write_path}")
+                BinaryReader.write(flows_per_app[appName]['all'][executionName], write_path)
                 
     else:
         raise Exception("There is no input file specified")
@@ -45,7 +56,7 @@ def run(pcaps_paths=[], flows_paths=[], write_flows_dir='', symbols_path='', out
 
 
     # Phase 4: Split test/train data if needed
-    reshape_flows_per_app(flows_per_app, train_size);
+    reshape_flows_per_app(flows_per_app, train_size)
 
 
     # Phase 5: Generate sequence of symbols based on symbols set and flows
