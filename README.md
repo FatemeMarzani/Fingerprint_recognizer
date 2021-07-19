@@ -21,3 +21,19 @@ Most of the data transferring on the network are encrypted, hence, it seems that
 
 ## Note
 This app is currently under development
+
+## How to run
+These are a few frequently used commands of this tool:
+
+ - To read pcap files and store them as binary files:
+    ```shell
+    > # python3 __main__.py -rp [path/to/pcap/files] -wf [path/to/binaries/directory]
+    > # Example:
+    > python3 __main__.py -rp data/pcaps/* -wf data/binaries
+    ```
+ - To read binary files and generate symbols:
+    ```shell
+    > # python3 __main__.py -rp [path/to/binary/files] -wf [path/to/output/directory] -symbols [path/to/symbols/file]
+    > # Example:
+    > python3 __main__.py -rf data/binaries/*/*.p -symbols data/symbols.bin -o data/output
+    ```
